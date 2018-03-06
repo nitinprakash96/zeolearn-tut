@@ -30,3 +30,70 @@ Examples of operations perfromed by Middlewares:
 The following picture shows the working of Django middlewares.
 
 ![Middleware working](../middleware.jpg)
+
+```python
+MIDDLEWARE_CLASSES = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+```
+
+Django applies the above middleware order in a top-down manner. Each Middleware class is a layer that wraps the view fuction. When the request passes through all the layers one by one, a response is generated and it again goes through all the layers on it's way back out.
+
+## Writing a custom Middleware
+
+Now that we know what is a middleware and how actually it works, we can write your own middlware. For this I'll be showing you a very simple example of a custom middleware.
+Remind you that the practice followed is as per the Django documenataion.
+
+
+In very simple terms, it is much like a view function.
+The only thing we need to care about is that there are 2 hooks avaliable for request and 3 for reponse.
+
+Before calling the view, in the request phase, the avaliable hooks are:
+- process_request()
+- process_view()
+
+After calling the view, in the response phase, the available hooks are:
+
+- process_exception()
+- process_template_response()
+- process_response()
+
+While writing a middleware, all we need to do is define one or more of the above functions as per our need.
+
+Let's suppose that we have a Django app that has the following `models.py` file.
+
+```python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models
+
+# Create your models here.
+
+
+class Movies(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    release_date = models.DateTimeField(default=datetime.now, blank=True)
+
+    def __unicode__(self):
+        return self.first_name
+```
+
+And now create a file where you define your custom middleware that uses the above model. Let's call this file as `movieMiddleware.py`
+
+```python
+from .models import Musician
+
+
+class GetMovies(object):
+    def process_request(self, request):
+        print "List of Movies"
+```
