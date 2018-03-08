@@ -87,7 +87,7 @@ class Movies(models.Model):
         return self.first_name
 ```
 
-And now create a file where you define your custom middleware that uses the above model. Let's call this file as `movieMiddleware.py`
+And now create a file where you define your custom middleware that uses the above model. Let's call this file as `moviemiddleware.py`
 
 ```python
 from .models import Musician
@@ -95,5 +95,28 @@ from .models import Musician
 
 class GetMovies(object):
     def process_request(self, request):
-        print "List of Movies"
+        print ('"Dark Knight is the best superhero movie of all time"')
+```
+
+Now in your `settings.py` file,
+
+```python
+MIDDLEWARE = [
+    'music.moviemiddleware.GetMovies',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+```
+
+Note that the order of middlewares is very important. When you run your application, It should output the following:
+
+```python
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+'Dark Knight is the best superhero movie of all time!'
 ```
