@@ -95,7 +95,7 @@ from .models import Musician
 
 class GetMovies(object):
     def process_request(self, request):
-        print ('"Dark Knight is the best superhero movie of all time"')
+        print ('"The Dark Knight is the best superhero movie of all time"')
 ```
 
 Now in your `settings.py` file,
