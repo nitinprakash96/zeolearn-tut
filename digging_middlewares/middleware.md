@@ -120,3 +120,76 @@ Starting development server at http://127.0.0.1:8000/
 Quit the server with CONTROL-C.
 'Dark Knight is the best superhero movie of all time!'
 ```
+
+This was a very trivial example to let you know how exactly middleware can be used and further manipulated for our own purposes. Now let's take a little more complicated example. In the following example we will wrtie a middleware that can handle redirects in the URL along with parameters. The default Django project doesn't allow it before hand.
+
+The logic of our middleware will be very simple:
+- We'll separate URL parameters from the `absolute_path`
+- Next get exact `redirect_path` of separated `absolute_path`
+- Then append the URL parameters which separated from `absolute_path` to `redirect_path`
+
+Since this is a response that we get in our HTTP cycle, we need to make a `process_response` function in our middlware class.
+
+The layout of our `CustomRedirectMiddleware.py` will be -
+
+```python
+class CustomRedirectFallbackMiddleware(RedirectFallbackMiddleware):
+  def process_response(self, request, response):
+    pass
+```
+
+Let's get into it and write a middleware for this.
+
+```python
+import urlparse
+
+from django import http
+from django.conf import settings
+from django.contrib.redirects.models import Redirect
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.redirects.middleware import RedirectFallbackMiddleware
+
+
+class CustomRedirectMiddleware(RedirectFallbackMiddleware):
+    response_gone_class = http.HttpResponseGone
+    response_redirect_class = http.HttpResponsePermanentRedirect
+
+    def process_response(self, request, response):
+        if response.status_code != 404:
+            return response
+
+        # get the absolute_path
+        absolute_path = request.get_full_path()
+
+        #separate URL parameters
+        parsed_url = None
+        if "?" in absolute_path:
+            parsed_url = urlparse.urlparse(full_path)
+            absolute_path = parsed_url.path
+
+        current_site = get_current_site(request)
+
+        # getting the redirect path
+        r = None
+        try:
+            r = Redirect.objects.get(site=current_site, old_path=absolute_path)
+        except Redirect.DoesNotExist:
+            pass
+
+        if r is not None:
+            if r.new_path == '':
+                return self.response_gone_class()
+
+            # Adding back the query parameters to redirecting path
+            # handles path with one or more query parameters
+            if parsed_url is not None:
+                new_path_with_query_params = r.new_path + "?" + parsed_url.query
+                return self.response_redirect_class(new_path_with_query_params)
+
+            # Handles redirections for urls without query parameters
+            return self.response_redirect_class(r.new_path)
+
+return response
+```
+
+As you can see the qabove code handles the three logic statements and can be used in your application by adding it to `MIDDLEWARE` in your `settings.py` file. 
