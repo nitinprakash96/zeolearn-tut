@@ -192,4 +192,8 @@ class CustomRedirectMiddleware(RedirectFallbackMiddleware):
 return response
 ```
 
-As you can see the qabove code handles the three logic statements and can be used in your application by adding it to `MIDDLEWARE` in your `settings.py` file. 
+As you can see the above code handles the three logic statements and can be used in your application by adding it to `MIDDLEWARE` in your `settings.py` file.
+
+There are a lot more cases where middlewares can be used as per the need of application. The things to keep in mind from this tutorial are:
+- ordering in middlewares are very important as they are processed while an HTTP cycle.
+- At least one of the request/response is necessary in order for it to be a Django middlware.
